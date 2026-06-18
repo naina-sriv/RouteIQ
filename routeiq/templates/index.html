@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RouteIQ — Route Optimizer</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    
+    <aside class="sidebar" id="sidebar">
+      <header class="sidebar-header">
+        <div class="logo">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="14" r="13" stroke="var(--accent)" stroke-width="2"/>
+            <path d="M14 6 L14 22 M6 14 L22 14" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="14" cy="14" r="3" fill="var(--accent)"/>
+          </svg>
+          <span class="logo-text">RouteIQ</span>
+        </div>
+        <div class="mode-toggle" id="modeToggle">
+          <button class="mode-btn active" data-mode="trip" onclick="switchMode('trip')">Trip Planner</button>
+          <button class="mode-btn" data-mode="fleet" onclick="switchMode('fleet')">Fleet Optimizer</button>
+        </div>
+      </header>
+
+      
+      <div class="stop-input-area">
+        <div class="input-row">
+          <input type="text" id="stopInput" placeholder="Search address or click map…" class="stop-input" />
+          <button class="btn-add" onclick="addStopFromInput()" title="Add stop">+</button>
+        </div>
+      </div>
+
+      
+      <div class="stop-list-wrap">
+        <div class="stop-list-header">
+          <span class="label">Stops</span>
+          <button class="btn-ghost" onclick="clearAllStops()">Clear all</button>
+        </div>
+        <ul class="stop-list" id="stopList"></ul>
+      </div>
+
+      
+      <div class="options-panel" id="tripOptions">
+        <div class="option-row">
+          <label>Start from</label>
+          <select id="startSelect" class="mini-select"></select>
+        </div>
+        <div class="option-row">
+          <label>End at</label>
+          <select id="endSelect" class="mini-select"></select>
+        </div>
+      </div>
+
+      
+      <div class="options-panel hidden" id="fleetOptions">
+        <div class="option-row">
+          <label>Depot (stop #)</label>
+          <select id="depotSelect" class="mini-select"></select>
+        </div>
+        <div class="vehicle-builder" id="vehicleBuilder">
+          <div class="vehicle-builder-header">
+            <span class="label">Vehicles</span>
+            <button class="btn-ghost" onclick="addVehicle()">+ Add</button>
+          </div>
+          <ul class="vehicle-list" id="vehicleList"></ul>
+        </div>
+      </div>
+
+      
+      <div class="optimize-wrap">
+        <button class="btn-optimize" id="optimizeBtn" onclick="runOptimize()">
+          <span id="optimizeBtnText">Optimize Route</span>
+          <span id="optimizeSpinner" class="spinner hidden"></span>
+        </button>
+      </div>
+
+      
+      <div class="results-panel hidden" id="resultsPanel"></div>
+
+      
+      <div class="fallback-warning hidden" id="fallbackWarning">
+        ⚠ Using straight-line estimates — OSRM unavailable
+      </div>
+    </aside>
+
+    
+    <main class="map-wrap">
+      <div id="map"></div>
+      <div class="map-hint" id="mapHint">Click map to add stops</div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/static/js/app.js"></script>
+  <script src="/static/js/trip.js"></script>
+  <script src="/static/js/fleet.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - OSRM_BASE=http://osrm:5000
+      - REDIS_URL=redis://redis:6379
+      - MAX_STOPS=20
+      - SOLVER_TIME_LIMIT_SECONDS=5
+    depends_on:
+      - redis
+      - osrm
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  osrm:
+    image: osrm/osrm-backend:latest
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./osrm-data:/data
+    command: osrm-routed --algorithm mld /data/india-latest.osrm
+    restart: unless-stopped
+
+# ── OSRM data prep (run once before docker-compose up) ──────────────────
+# 1. Download:
+#    wget -P osrm-data https://download.geofabrik.de/asia/india-latest.osm.pbf
+#
+# 2. Extract:
+#    docker run -t -v $(pwd)/osrm-data:/data osrm/osrm-backend \
+#      osrm-extract -p /opt/car.lua /data/india-latest.osm.pbf
+#
+# 3. Partition:
+#    docker run -t -v $(pwd)/osrm-data:/data osrm/osrm-backend \
+#      osrm-partition /data/india-latest.osrm
+#
+# 4. Customize:
+#    docker run -t -v $(pwd)/osrm-data:/data osrm/osrm-backend \
+#      osrm-customize /data/india-latest.osrm
+#
+# 5. docker-compose up
