@@ -55,41 +55,41 @@ Use case: delivery fleets, logistics companies, courier networks.
 ╔══════════════════════════════════════════════════════════════════════╗
 ║                           Browser / Client                           ║
 ║                                                                      ║
-║   ┌──────────────────────┐      ┌──────────────────────────────┐    ║
-║   │   Trip Planner UI    │      │   Fleet Optimizer UI         │    ║
-║   │   (trip.js)          │      │   (fleet.js)                 │    ║
-║   │                      │      │                              │    ║
-║   │  • Stop list         │      │  • Vehicle builder           │    ║
-║   │  • Start/end select  │      │  • Capacity inputs           │    ║
-║   │  • Route polyline    │      │  • Color-coded routes        │    ║
-║   │  • Travel time card  │      │  • Per-vehicle stat cards    │    ║
-║   └──────────┬───────────┘      └──────────────┬───────────────┘    ║
+║   ┌──────────────────────┐      ┌──────────────────────────────┐     ║
+║   │   Trip Planner UI    │      │   Fleet Optimizer UI         │     ║
+║   │   (trip.js)          │      │   (fleet.js)                 │     ║ 
+║   │                      │      │                              │     ║
+║   │  • Stop list         │      │  • Vehicle builder           │     ║
+║   │  • Start/end select  │      │  • Capacity inputs           │     ║
+║   │  • Route polyline    │      │  • Color-coded routes        │     ║
+║   │  • Travel time card  │      │  • Per-vehicle stat cards    │     ║
+║   └──────────┬───────────┘      └──────────────┬───────────────┘     ║
 ║              │                                 │                     ║
-║   ┌──────────▼─────────────────────────────────▼───────────────┐    ║
-║   │                    app.js (shared state)                   │    ║
-║   │   map · markers · stop list · geocoding · layer mgmt      │    ║
-║   └──────────────────────────────┬─────────────────────────────┘    ║
-║                                  │ fetch() HTTP                     ║
-╚══════════════════════════════════╪═════════════════════════════════╝
+║   ┌──────────▼─────────────────────────────────▼───────────────┐     ║
+║   │                    app.js (shared state)                   │     ║
+║   │   map · markers · stop list · geocoding · layer mgmt       │     ║
+║   └──────────────────────────────┬─────────────────────────────┘     ║
+║                                  │ fetch() HTTP                      ║
+╚══════════════════════════════════╪═══════════════════════════════════╝
                                    │
                     ┌──────────────▼──────────────────┐
-                    │         FastAPI Backend          │
-                    │                                  │
-                    │  POST /optimize         (TSP)    │
-                    │  POST /optimize/fleet   (VRP)    │
-                    │  POST /geocode                   │
-                    │  POST /reverse-geocode           │
-                    │  GET  /health                    │
-                    └──────┬───────────────┬───────────┘
+                    │         FastAPI Backend         │
+                    │                                 │
+                    │  POST /optimize         (TSP)   │
+                    │  POST /optimize/fleet   (VRP)   │
+                    │  POST /geocode                  │
+                    │  POST /reverse-geocode          │
+                    │  GET  /health                   │
+                    └──────┬───────────────┬──────────┘
                            │               │
               ┌────────────▼──┐    ┌───────▼────────────┐
-              │  utils/       │    │  utils/             │
-              │  solver.py    │    │  vrp_solver.py      │
-              │               │    │                     │
-              │  OR-Tools TSP │    │  OR-Tools VRP       │
-              │  GLS search   │    │  Capacity + time    │
-              │  NN fallback  │    │  window dimensions  │
-              └────────┬──────┘    └──────────┬──────────┘
+              │  utils/       │    │  utils/            │
+              │  solver.py    │    │  vrp_solver.py     │
+              │               │    │                    │
+              │  OR-Tools TSP │    │  OR-Tools VRP      │
+              │  GLS search   │    │  Capacity + time   │
+              │  NN fallback  │    │  window dimensions │
+              └────────┬──────┘    └──────────┬─────────┘
                        │                      │
                        └──────────┬───────────┘
                                   │
@@ -125,63 +125,63 @@ Use case: delivery fleets, logistics companies, courier networks.
 ```
 Client                  FastAPI              Cache         OSRM          OR-Tools
   │                        │                   │              │               │
-  │── POST /optimize ──────►│                  │              │               │
-  │   {stops, start, end}  │                  │              │               │
+  │── POST /optimize ─────►│                   │              │               │
+  │   {stops, start, end}  │                   │              │               │
   │                        │── get_matrix() ──►│              │               │
-  │                        │                  │              │               │
-  │                        │  ┌─ cache HIT ───┤              │               │
+  │                        │                   │              │               │
+  │                        │  ┌─ cache HIT ────┤              │               │
   │                        │  │ return matrix  │              │               │
   │                        │  └───────────────►│              │               │
-  │                        │                  │              │               │
-  │                        │  ┌─ cache MISS ──┤              │               │
-  │                        │  │               │── /table ───►│               │
-  │                        │  │               │  (1–3s)      │               │
-  │                        │  │               │◄── matrix ───│               │
-  │                        │  │ set_matrix()  │              │               │
+  │                        │                   │              │               │
+  │                        │  ┌─ cache MISS ───┤              │               │
+  │                        │  │                │── /table ───►│               │
+  │                        │  │                │  (1–3s)      │               │
+  │                        │  │                │◄── matrix ───│               │
+  │                        │  │ set_matrix()   │              │               │
   │                        │  └───────────────►│              │               │
-  │                        │                  │              │               │
-  │                        │────── solve_tsp(matrix) ───────────────────────►│
-  │                        │                  │              │   GLS ~1–5s   │
-  │                        │◄─────────────────────────── ordered_indices ───│
-  │                        │                  │              │               │
-  │                        │── /route (per leg) ────────────►│               │
-  │                        │◄── polyline ───────────────────│               │
-  │                        │                  │              │               │
-  │◄── OptimizeResponse ───│                  │              │               │
-  │   {indices, legs,      │                  │              │               │
-  │    total_duration,     │                  │              │               │
-  │    used_fallback}      │                  │              │               │
+  │                        │                   │              │               │
+  │                        │─────── solve_tsp(matrix) ───────────────────────►│
+  │                        │                   │              │   GLS ~1–5s   │
+  │                        │◄───────────────────────────── ordered_indices ───│
+  │                        │                   │              │               │
+  │                        │── /route (per leg) ─────────────►│               │
+  │                        │◄── polyline ─────────────────────│               │
+  │                        │                   │              │               │
+  │◄── OptimizeResponse ───│                   │              │               │
+  │   {indices, legs,      │                   │              │               │
+  │    total_duration,     │                   │              │               │
+  │    used_fallback}      │                   │              │               │
 ```
 
 ### VRP: `POST /optimize/fleet`
 
 ```
-Client                  FastAPI              OR-Tools VRP solver
-  │                        │                       │
-  │── POST /optimize/fleet ►│                      │
-  │   {stops, vehicles,    │                       │
-  │    depot_index}        │                       │
-  │                        │                       │
+Client                   FastAPI              OR-Tools VRP solver
+  │                         │                       │
+  │── POST /optimize/fleet ►│                       │
+  │   {stops, vehicles,     │                       │
+  │    depot_index}         │                       │
+  │                         │                       │
   │                   (matrix fetch — same as TSP above)
-  │                        │                       │
-  │                        │── solve_vrp() ────────►│
-  │                        │   vehicles + stops    │
-  │                        │                       │── AddDimensionWithVehicleCapacity()
-  │                        │                       │── AddDimension() [time windows]
-  │                        │                       │── AddDisjunction() [droppable stops]
-  │                        │                       │── GLS search
-  │                        │                       │
-  │                        │◄── routes[], unassigned[]
-  │                        │                       │
+  │                         │                       │
+  │                         │── solve_vrp() ───────►│
+  │                         │   vehicles + stops    │
+  │                         │                       │── AddDimensionWithVehicleCapacity()
+  │                         │                       │── AddDimension() [time windows]
+  │                         │                       │── AddDisjunction() [droppable stops]
+  │                         │                       │── GLS search
+  │                         │                       │
+  │                         │◄── routes[], unassigned[]
+  │                         │                       │
   │                   (polyline fetch per leg — same as TSP)
-  │                        │                       │
-  │◄── FleetResponse ──────│                       │
-  │   {routes[]: {         │                       │
-  │     vehicle_index,     │                       │
-  │     ordered_indices,   │                       │
-  │     total_duration,    │                       │
-  │     total_load, legs   │                       │
-  │   }, unassigned_stops} │                       │
+  │                         │                       │
+  │◄── FleetResponse ───────│                       │
+  │   {routes[]: {          │                       │
+  │     vehicle_index,      │                       │
+  │     ordered_indices,    │                       │
+  │     total_duration,     │                       │
+  │     total_load, legs    │                       │
+  │   }, unassigned_stops}  │                       │
 ```
 
 ---
@@ -318,10 +318,10 @@ Single-vehicle TSP. Finds the shortest route visiting all stops.
 
 **Errors**
 
-| Code | Reason |
-|------|--------|
-| 400 | More than 20 stops |
-| 422 | Fewer than 2 stops, or invalid start/end index |
+| Code | Reason                                         |
+|------|------------------------------------------------|
+| 400  | More than 20 stops                             |
+| 422  | Fewer than 2 stops, or invalid start/end index |
 
 ---
 
@@ -662,13 +662,13 @@ pytest tests/ -v
 
 ## Environment variables
 
-| Variable | Default | Description |
-|---|---|---|
-| `OSRM_BASE` | `http://router.project-osrm.org` | OSRM API base URL. Set to `http://osrm:5000` in Docker. |
-| `REDIS_URL` | `redis://localhost:6379` | Redis connection string. App runs without Redis (caching disabled). |
-| `MAX_STOPS` | `20` | Maximum stops per request. OR-Tools is practical up to ~25. |
-| `SOLVER_TIME_LIMIT_SECONDS` | `5` | Hard cutoff for OR-Tools search. Returns best solution found so far. |
-
+| Variable                    | Default                          | Description                                                          |
+|-----------------------------|----------------------------------|----------------------------------------------------------------------|
+| `OSRM_BASE`                 | `http://router.project-osrm.org` | OSRM API base URL. Set to `http://osrm:5000` in Docker.              |
+| `REDIS_URL`                 | `redis://localhost:6379`         | Redis connection string. App runs without Redis (caching disabled).  |
+| `MAX_STOPS`                 | `20`                             | Maximum stops per request. OR-Tools is practical up to ~25.          |
+| `SOLVER_TIME_LIMIT_SECONDS` | `5`                              | Hard cutoff for OR-Tools search. Returns best solution found so far. |
+ 
 Copy `.env.example` to `.env` and adjust before running locally.
 
 ---
@@ -678,7 +678,7 @@ Copy `.env.example` to `.env` and adjust before running locally.
 *(Run `python benchmarks/compare_algorithms.py` and fill in your numbers.)*
 
 | Stops | Nearest-neighbor (s) | OR-Tools (s) | Improvement |
-|---|---|---|---|
+|----|---|---|---|
 | 5  | — | — | —% |
 | 10 | — | — | —% |
 | 15 | — | — | —% |
@@ -686,22 +686,15 @@ Copy `.env.example` to `.env` and adjust before running locally.
 
 ---
 
-## Resume line
-
-Once benchmarks are in:
-
-> Built RouteIQ, a full-stack route optimizer solving TSP and VRP for up to 20 stops across 2–5 vehicles using Google OR-Tools with Guided Local Search — achieving **X% shorter routes** than nearest-neighbor baseline. Stack: FastAPI · OR-Tools · OSRM (self-hosted via Docker) · Redis · Leaflet.js. Zero external API costs at scale.
-
----
 
 ## Stack
 
-| Layer | Technology | Why |
-|---|---|---|
-| Backend | FastAPI + Python 3.12 | Async-native, Pydantic validation, fast |
-| Solver | Google OR-Tools 9.10 | Industry-standard, handles VRP in <5s |
-| Road network | OSRM | Sub-second table queries, self-hostable |
-| Cache | Redis 7 | Matrix reuse: 1–3s → <100ms |
-| Frontend | Leaflet.js + Vanilla JS | No framework overhead for a map-first app |
-| Container | Docker + Compose | Single command for full stack |
-| Geocoding | Nominatim (OSM) | Zero cost, no API key required |
+| Layer        | Technology              | Why                                       |
+|--------------|-------------------------|-------------------------------------------|
+| Backend      | FastAPI + Python 3.12   | Async-native, Pydantic validation, fast   |
+| Solver       | Google OR-Tools 9.10    | Industry-standard, handles VRP in <5s     |
+| Road network | OSRM                    | Sub-second table queries, self-hostable   |
+| Cache        | Redis 7                 | Matrix reuse: 1–3s → <100ms               |
+| Frontend     | Leaflet.js + Vanilla JS | No framework overhead for a map-first app |
+| Container    | Docker + Compose        | Single command for full stack             |
+| Geocoding    | Nominatim (OSM)         | Zero cost, no API key required            |
