@@ -30,15 +30,15 @@ pip install -r requirements.txt && uvicorn main:app --reload --port 5000
 
 ## What this solves
 
-| Most tutorials | RouteIQ |
-|---|---|
-| Straight-line (haversine) distance | Real road travel times via OSRM |
-| Nearest-neighbor heuristic | OR-Tools with Guided Local Search |
-| No fallback when API fails | Haversine fallback, labeled in response |
-| Single hardcoded vehicle | Multi-vehicle VRP with capacity constraints |
-| No time constraints | Per-stop time windows ("arrive 10am–2pm") |
-| No caching | Redis cache on distance matrix (same stops = instant) |
-| Runs locally only | Dockerized, self-hostable, zero API costs |
+| RouteIQ |
+|---|
+| Real road travel times via OSRM |
+| OR-Tools with Guided Local Search |
+| Haversine fallback, labeled in response |
+| Multi-vehicle VRP with capacity constraints |
+| Per-stop time windows ("arrive 10am–2pm") |
+| Redis cache on distance matrix (same stops = instant) |
+| Dockerized, self-hostable, zero API costs |
 
 **Trip Planner (TSP):** One vehicle. Visit all stops in the optimal order. Fixed start and end.
 Use case: road trips, field sales reps, last-mile delivery drivers with a fixed stop list.
