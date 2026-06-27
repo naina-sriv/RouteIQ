@@ -24,21 +24,18 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
-# ── Health ────────────────────────────────────────────────────────────────
 
 @app.get("/health")
 async def health():
     return {"status": "ok", "version": "2.0.0"}
 
 
-# ── Frontend ──────────────────────────────────────────────────────────────
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse(request=request, name="index.html")
 
 
-# ── TSP: single-vehicle optimizer ─────────────────────────────────────────
 
 @app.post("/optimize", response_model=OptimizeResponse)
 async def optimize(req: OptimizeRequest):
@@ -75,7 +72,6 @@ async def optimize(req: OptimizeRequest):
     )
 
 
-# ── VRP: multi-vehicle fleet optimizer ────────────────────────────────────
 
 @app.post("/optimize/fleet", response_model=FleetResponse)
 async def optimize_fleet(req: FleetRequest):
@@ -136,7 +132,6 @@ async def optimize_fleet(req: FleetRequest):
     )
 
 
-# ── Geocoding ─────────────────────────────────────────────────────────────
 
 @app.post("/geocode", response_model=GeocodeResponse)
 async def geocode_endpoint(req: GeocodeRequest):
