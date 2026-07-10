@@ -1,5 +1,7 @@
-# RouteIQ v2
-
+<div align="center">
+  <img src="docs/logo.png" width="200" alt="RouteIQ Logo">
+  <h1>RouteIQ v2</h1>
+</div>
 <p align="left">
   <img src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi" alt="FastAPI" />
   <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
@@ -39,10 +41,10 @@ The application is built with a fast and modern stack, separating the routing lo
 
 ```mermaid
 flowchart LR
-    Client[Frontend UI] -->|HTTP POST| API(FastAPI)
-    API <-->|Distance Matrix| Cache{Redis Cache}
-    Cache -- Miss --> Routing[OSRM]
-    API <-->|Optimization| Solver[Google OR-Tools]
+    Client[fa:fa-window-maximize Frontend UI] -->|HTTP POST| API(fa:fa-bolt FastAPI)
+    API <-->|Distance Matrix| Cache{fa:fa-database Redis Cache}
+    Cache -- Miss --> Routing[fa:fa-map-marked-alt OSRM]
+    API <-->|Optimization| Solver[fa:fa-cogs Google OR-Tools]
 ```
 
 - **Backend**: FastAPI handles asynchronous requests and coordinates solving.
