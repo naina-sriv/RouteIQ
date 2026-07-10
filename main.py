@@ -1,4 +1,5 @@
 import logging
+import asyncio
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -49,11 +50,19 @@ async def optimize(req: OptimizeRequest):
 
     legs: list[Leg] = []
     any_fallback = used_fallback
+    
+    tasks = []
     for i in range(len(ordered) - 1):
         a, b = ordered[i], ordered[i + 1]
-        polyline, poly_fallback = await get_route_polyline(
+        tasks.append(get_route_polyline(
             coords[a][0], coords[a][1], coords[b][0], coords[b][1]
-        )
+        ))
+    
+    results = await asyncio.gather(*tasks)
+    
+    for i in range(len(ordered) - 1):
+        a, b = ordered[i], ordered[i + 1]
+        polyline, poly_fallback = results[i]
         if poly_fallback:
             any_fallback = True
         legs.append(Leg(
@@ -100,11 +109,18 @@ async def optimize_fleet(req: FleetRequest):
 
     for r in raw_routes:
         legs: list[Leg] = []
+        tasks = []
         for i in range(len(r.ordered_indices) - 1):
             a, b = r.ordered_indices[i], r.ordered_indices[i + 1]
-            polyline, poly_fallback = await get_route_polyline(
+            tasks.append(get_route_polyline(
                 coords[a][0], coords[a][1], coords[b][0], coords[b][1]
-            )
+            ))
+            
+        results = await asyncio.gather(*tasks)
+        
+        for i in range(len(r.ordered_indices) - 1):
+            a, b = r.ordered_indices[i], r.ordered_indices[i + 1]
+            polyline, poly_fallback = results[i]
             if poly_fallback:
                 any_fallback = True
             legs.append(Leg(

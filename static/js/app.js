@@ -17,6 +17,7 @@ const VEHICLE_COLORS = ['#5b7fff', '#ff6b6b', '#ffd93d', '#6bcb77', '#c77dff'];
 
 
 const map = L.map('map', { zoomControl: true }).setView([20.5937, 78.9629], 5);
+map.zoomControl.setPosition('topright');
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© OpenStreetMap contributors',
@@ -264,6 +265,12 @@ function switchMode(mode) {
   document.getElementById('fleetOptions').classList.toggle('hidden', mode !== 'fleet');
   const btn = document.getElementById('optimizeBtnText');
   btn.textContent = mode === 'trip' ? 'Optimize Route' : 'Optimize Fleet';
+  
+  const slider = document.getElementById('modeSlider');
+  if (slider) {
+    slider.style.transform = mode === 'fleet' ? 'translateX(100%)' : 'translateX(0)';
+  }
+  
   clearRoutes();
 }
 

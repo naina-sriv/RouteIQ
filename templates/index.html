@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RouteIQ — Route Optimizer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="/static/css/style.css" />
 </head>
@@ -21,6 +24,7 @@
           <span class="logo-text">RouteIQ</span>
         </div>
         <div class="mode-toggle" id="modeToggle">
+          <div class="mode-slider" id="modeSlider"></div>
           <button class="mode-btn active" data-mode="trip" onclick="switchMode('trip')">Trip Planner</button>
           <button class="mode-btn" data-mode="fleet" onclick="switchMode('fleet')">Fleet Optimizer</button>
         </div>
