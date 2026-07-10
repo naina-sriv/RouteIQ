@@ -72,7 +72,7 @@ The API provides core routing endpoints. For detailed schemas, run the app and v
 
 - `POST /optimize`: Single-vehicle TSP. Finds the shortest route visiting all stops.
 - `POST /optimize/fleet`: Multi-vehicle VRP. Splits stops across vehicles respecting capacity and time windows.
-- `POST /geocode`: Forward geocoding via Nominatim.
+- `POST /geocode`: Forward geocoding via Position Stack API.
 - `POST /reverse-geocode`: Coordinates to address mapping.
 - `GET /health`: API liveness check.
 
@@ -82,7 +82,7 @@ The API provides core routing endpoints. For detailed schemas, run the app and v
 
 ### Local Development
 
-1. Copy `.env.example` to `.env`.
+1. Copy `.env.example` to `.env` and configure your `POSITION_STACK_API_KEY`.
 2. Install dependencies: `pip install -r requirements.txt`.
 3. Run the server: `uvicorn main:app --reload --port 5000`.
 
