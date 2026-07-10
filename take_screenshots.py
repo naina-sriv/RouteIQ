@@ -29,6 +29,10 @@ async def run():
         await page.evaluate("runOptimize()")
         await asyncio.sleep(3) # Wait for results to render
         
+        # Zoom in and pan to offset the sidebar
+        await page.evaluate("map.zoomIn(1); map.panBy([-150, 0])")
+        await asyncio.sleep(1)
+        
         # Take screenshot
         print("Taking Trip Planner screenshot...")
         await page.screenshot(path='docs/trip_planner_demo.png')
@@ -50,6 +54,10 @@ async def run():
         print("Optimizing fleet...")
         await page.evaluate("runOptimize()")
         await asyncio.sleep(3) # Wait for results to render
+        
+        # Zoom in and pan to offset the sidebar
+        await page.evaluate("map.zoomIn(1); map.panBy([-150, 0])")
+        await asyncio.sleep(1)
         
         print("Taking Fleet Optimizer screenshot...")
         await page.screenshot(path='docs/fleet_optimizer_demo.png')
