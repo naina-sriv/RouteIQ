@@ -1,12 +1,11 @@
-from pydantic import BaseModel, Field, model_validator
 from typing import Optional
+from pydantic import BaseModel, Field, model_validator
 
 
 class Stop(BaseModel):
     lat: float
     lng: float
     label: Optional[str] = None
-
     time_window_open: Optional[int] = None
     time_window_close: Optional[int] = None
     demand: int = 1
@@ -18,12 +17,12 @@ class OptimizeRequest(BaseModel):
     end_index: int = 0
 
     @model_validator(mode="after")
-    def validate_indices(self):
+    def validate_indices(self) -> "OptimizeRequest":
         n = len(self.stops)
-        if self.start_index >= n or self.start_index < 0:
-            raise ValueError(f"start_index must be 0..{n-1}")
-        if self.end_index >= n or self.end_index < 0:
-            raise ValueError(f"end_index must be 0..{n-1}")
+        if not (0 <= self.start_index < n):
+            raise ValueError(f"start_index must be 0..{n - 1}")
+        if not (0 <= self.end_index < n):
+            raise ValueError(f"end_index must be 0..{n - 1}")
         return self
 
 
@@ -38,10 +37,10 @@ class FleetRequest(BaseModel):
     depot_index: int = 0
 
     @model_validator(mode="after")
-    def validate_depot(self):
+    def validate_depot(self) -> "FleetRequest":
         n = len(self.stops)
-        if self.depot_index >= n or self.depot_index < 0:
-            raise ValueError(f"depot_index must be 0..{n-1}")
+        if not (0 <= self.depot_index < n):
+            raise ValueError(f"depot_index must be 0..{n - 1}")
         return self
 
 
@@ -50,7 +49,6 @@ class Leg(BaseModel):
     to_index: int
     duration_seconds: int
     polyline: list[list[float]]
-
 
 
 class OptimizeResponse(BaseModel):

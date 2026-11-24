@@ -1,28 +1,25 @@
 #!/usr/bin/env python3
 """
-Benchmark: nearest-neighbor heuristic vs OR-Tools Guided Local Search
+Benchmark: Nearest-Neighbor Heuristic vs OR-Tools Guided Local Search
 Run: python benchmarks/compare_algorithms.py
 """
-import sys
+
 import math
 import random
+import sys
 import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from utils.solver import solve_tsp
 
-
-
-
+EARTH_RADIUS = 6_371_000
+SPEED_MPS = 50.0 * (1000 / 3600)
 
 
 def nearest_neighbor(matrix: list[list[int]], start: int = 0) -> list[int]:
-    n = len(matrix)
-    unvisited = set(range(n)) - {start}
-    route = [start]
-    current = start
+    unvisited = set(range(len(matrix))) - {start}
+    route, current = [start], start
     while unvisited:
         nearest = min(unvisited, key=lambda j: matrix[current][j])
         route.append(nearest)
@@ -38,48 +35,39 @@ def route_cost(matrix: list[list[int]], route: list[int]) -> int:
 
 def random_matrix(n: int, seed: int = 42) -> list[list[int]]:
     rng = random.Random(seed)
-    points = [(rng.uniform(18, 28), rng.uniform(72, 88)) for _ in range(n)]
+    coords = [(rng.uniform(18.0, 28.0), rng.uniform(72.0, 88.0)) for _ in range(n)]
+
+    def haversine(a: tuple[float, float], b: tuple[float, float]) -> int:
+        p1, p2, dlat, dlng = math.radians(a[0]), math.radians(b[0]), math.radians(b[0] - a[0]), math.radians(b[1] - a[1])
+        h = math.sin(dlat / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dlng / 2) ** 2
+        return int((2 * EARTH_RADIUS * math.asin(math.sqrt(h))) / SPEED_MPS)
+
+    return [[0 if i == j else haversine(coords[i], coords[j]) for j in range(n)] for i in range(n)]
 
 
-    def haversine(a, b):
-        R = 6371000
-        phi1, phi2 = math.radians(a[0]), math.radians(b[0])
-        dphi = math.radians(b[0] - a[0])
-        dl = math.radians(b[1] - a[1])
-        h = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dl / 2) ** 2
-        return int(2 * R * math.asin(math.sqrt(h)) / (50_000 / 3600))
-
-    return [[haversine(points[i], points[j]) if i != j else 0 for j in range(n)] for i in range(n)]
-
-
-def benchmark(stop_counts: list[int] = [5, 10, 15, 20], seed: int = 42):
-    print(f"\n{'Stops':>6}  {'NN (s)':>10}  {'OR-Tools (s)':>12}  {'NN time':>10}  {'OR-Tools time':>10}  {'Improvement':>11}")
-    print("─" * 72)
+def run_benchmark(stop_counts: list[int] = [5, 10, 15, 20], seed: int = 42):
+    header = f"\n{'Stops':>6}  {'NN Time (s)':>12}  {'ORT Time (s)':>13}  {'NN Cost (s)':>12}  {'ORT Cost (s)':>13}  {'Improvement':>12}"
+    print(header)
+    print("─" * len(header))
 
     for n in stop_counts:
         matrix = random_matrix(n, seed=seed)
 
-
         t0 = time.perf_counter()
-        nn_route = nearest_neighbor(matrix, start=0)
+        nn_r = nearest_neighbor(matrix, start=0)
         nn_time = time.perf_counter() - t0
-        nn_cost = route_cost(matrix, nn_route)
-
+        nn_c = route_cost(matrix, nn_r)
 
         t0 = time.perf_counter()
-        ort_route = solve_tsp(matrix, start_index=0, end_index=0)
+        ort_r = solve_tsp(matrix, start_index=0, end_index=0)
         ort_time = time.perf_counter() - t0
-        ort_cost = route_cost(matrix, ort_route)
+        ort_c = route_cost(matrix, ort_r)
 
-        improvement = (nn_cost - ort_cost) / nn_cost * 100 if nn_cost > 0 else 0
+        imp = ((nn_c - ort_c) / nn_c * 100) if nn_c > 0 else 0.0
+        print(f"{n:>6}  {nn_time:>12.4f}  {ort_time:>13.4f}  {nn_c:>12,d}  {ort_c:>13,d}  {imp:>11.1f}%")
 
-        print(
-            f"{n:>6}  {nn_time:>10.3f}  {ort_time:>12.3f}  "
-            f"{nn_cost:>10,}  {ort_cost:>13,}  {improvement:>10.1f}%"
-        )
-
-    print("\nUnits: times in seconds, costs in seconds of travel time\n")
+    print("\nNotes: Costs represent total travel time (seconds); lower is better.\n")
 
 
 if __name__ == "__main__":
-    benchmark()
+    run_benchmark()

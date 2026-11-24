@@ -1,14 +1,24 @@
-from ortools.constraint_solver import routing_enums_pb2, pywrapcp
+"""
+Diagnostic utility to inspect OR-Tools index manager node mappings.
+Run directly: python utils/debug.py
+"""
 
-n = 5
-manager = pywrapcp.RoutingIndexManager(n, 1, [0], [0])
-routing = pywrapcp.RoutingModel(manager)
+from ortools.constraint_solver import pywrapcp
 
-print(f"n={n}, routing.Size()={routing.Size()}, routing.Nodes()={routing.nodes()}")
 
-for idx in range(routing.Size() + 5):
-    try:
-        node = manager.IndexToNode(idx)
-        print(f"  idx={idx} -> node={node}")
-    except Exception as e:
-        print(f"  idx={idx} -> ERROR: {e}")
+def debug_node_mapping(num_stops: int = 5) -> None:
+    manager = pywrapcp.RoutingIndexManager(num_stops, 1, [0], [0])
+    routing = pywrapcp.RoutingModel(manager)
+
+    print(f"num_stops={num_stops}, routing.Size()={routing.Size()}, routing.nodes()={routing.nodes()}")
+
+    for idx in range(routing.Size() + 5):
+        try:
+            node = manager.IndexToNode(idx)
+            print(f"  idx={idx} -> node={node}")
+        except Exception as err:
+            print(f"  idx={idx} -> ERROR: {err}")
+
+
+if __name__ == "__main__":
+    debug_node_mapping()
